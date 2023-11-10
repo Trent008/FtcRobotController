@@ -24,7 +24,7 @@ public class Teleoperated extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            driveTrain.set(new Vector(0, 0), 0, true);
+            driveTrain.set(new Vector(gamepad1.left_stick_x, gamepad1.left_stick_y), gamepad1.right_stick_x, true);
         }
 
     }
