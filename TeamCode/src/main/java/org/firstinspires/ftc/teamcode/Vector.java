@@ -1,7 +1,7 @@
-package frc.robot;
+package org.firstinspires.ftc.teamcode;
 
 /*** stores a 2D vector for doing vector math ***/
-class Vector {
+public class Vector {
 	public double x;
 	public double y;
 

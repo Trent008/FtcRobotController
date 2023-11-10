@@ -1,6 +1,18 @@
-package frc.robot;
+package org.firstinspires.ftc.teamcode.subsystems;
 
-import frc.robot.Constants.DTConstants;
+import static com.qualcomm.robotcore.util.ElapsedTime.Resolution.MILLISECONDS;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.teamcode.Constants.DTConstants;
+import org.firstinspires.ftc.teamcode.Utils;
+import org.firstinspires.ftc.teamcode.Vector;
+
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 public final class DriveTrain {
 	// for storing the current rate setpoints
@@ -13,14 +25,38 @@ public final class DriveTrain {
 	private Vector currentFieldPosition = DTConstants.startingPosition;
 	// current angle on the field
 	private double currentFieldAngle;
-	// angle reported by angle measurement device
-	private double gyroAngle = 0;
+	// reported angle of the imu relative to the start of the program
+	private double currentIMUAngle;
 
-	MecanumWheel leftFront = new MecanumWheel("leftFront",1, 1, 1);
-	MecanumWheel leftBack = new MecanumWheel("leftBack", -1, 1, 1);
-	MecanumWheel rightFront = new MecanumWheel("rightFront", 1, -1, 1);
-	MecanumWheel rightBack = new MecanumWheel("rightBack", -1, -1, 1);
-	MecanumWheel[] wheels = { leftFront, leftBack, rightFront, rightBack };
+	// gyro (imu) object
+	private BNO055IMU imu;
+
+	// used to find the time between set calls to achieve consistent acceleration
+	private ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+
+	// construct all mecanum wheel objects
+	private MecanumWheel leftFront = new MecanumWheel("leftFront", -1, -1, -1);
+	private MecanumWheel leftBack = new MecanumWheel("leftBack", 1, -1, -1);
+	private MecanumWheel rightFront = new MecanumWheel("rightFront", -1, 1, -1);
+	private MecanumWheel rightBack = new MecanumWheel("rightBack", 1, 1, -1);
+	private MecanumWheel[] wheels = { leftFront, leftBack, rightFront, rightBack };
+
+	public void initialize(HardwareMap hwMap) {
+		// initialize all mecanum wheels
+		for (MecanumWheel wheel : wheels) {	wheel.initialize(hwMap); }
+
+		// gyro (imu) parameters
+		BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+		parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+		parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+
+		// initialize imu
+		imu = hwMap.get(BNO055IMU.class, "imu");
+		imu.initialize(parameters);
+
+
+		timer.reset();
+	}
 
 	/**
 	 * drive the mecanum chassis
@@ -33,8 +69,10 @@ public final class DriveTrain {
 		// store the target rates
 		this.targetFieldRate = targetFieldRate;
 		this.targetTurnRate = targetTurnRate;
+		// find gyro angle
+		currentIMUAngle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
 		// set the current field angle to the gyro angle + the starting angle
-		currentFieldAngle = Utils.angleSum(gyroAngle, DTConstants.startingAngle);
+		currentFieldAngle = Utils.angleSum(currentIMUAngle, DTConstants.startingAngle);
 		// modify the target rates to make them physically achievable
 		normalizeWheelSpeeds();
 		// apply a slew rate if using acceleration
@@ -99,16 +137,19 @@ public final class DriveTrain {
 	 */
 	private void applySlewRate(final Vector targetFieldRate, final double targetTurnRate) {
 		Vector fieldRateError = targetFieldRate.getSubtracted(currentFieldRate).getScaled(0.5);
-		// increment field rate toward target field rate
-		if (Utils.abs(fieldRateError) > DTConstants.slewRate) {
-			// increment toward target
-			currentFieldRate.add(fieldRateError.getScaled(DTConstants.slewRate / Utils.abs(fieldRateError)));
+		// calculate slew-rate based on how much time has passed
+		double slewRate = timer.milliseconds() / DTConstants.timeToMax;
+		timer.reset();
+		if (Utils.abs(fieldRateError) > slewRate) {
+			// increment toward target at the slew rate
+			currentFieldRate.add(fieldRateError.getScaled(slewRate / Utils.abs(fieldRateError)));
+
 		} else {
 			currentFieldRate = targetFieldRate;
 		}
 		double turnRateError = (targetTurnRate - currentTurnRate);
-		if (Math.abs(turnRateError) > DTConstants.slewRate) {
-			currentTurnRate += DTConstants.slewRate / Math.abs(turnRateError);
+		if (Math.abs(turnRateError) > slewRate) {
+			currentTurnRate += slewRate / Math.abs(turnRateError);
 		} else {
 			currentTurnRate = targetTurnRate;
 		}

@@ -1,13 +1,18 @@
-package frc.robot;
+package org.firstinspires.ftc.teamcode.subsystems;
 
-import frc.robot.Constants.MWConstants;
+import org.firstinspires.ftc.teamcode.Constants.MWConstants;
+import org.firstinspires.ftc.teamcode.Vector;
+
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class MecanumWheel {
-    private double xMultiplier;
-    private double yMultiplier;
-    private double rMultiplier;
+    private final double xMultiplier;
+    private final double yMultiplier;
+    private final double rMultiplier;
     private double lastPosition = 0;
 
+    HardwareMap hwMap = null;
     DcMotor motor;
     String motorName;
 
@@ -24,8 +29,9 @@ public class MecanumWheel {
         this.rMultiplier = rMultiplier;
     }
 
-    public void initialize() {
-        this.motor = hardwareMap.get(DcMotor.class, motorName);
+    public void initialize(HardwareMap hwMap) {
+        this.hwMap = hwMap;
+        motor = this.hwMap.get(DcMotor.class, motorName);
     }
 
     /**
@@ -43,14 +49,14 @@ public class MecanumWheel {
      * @param turnRate turn rate command
      */
     public void drive(Vector driveRate, double turnRate) {
-        getVelocity(driveRate, turnRate); // todo: use this value to drive your motor
+        motor.setPower(getVelocity(driveRate, turnRate));
     }
 
     public Vector getPositionChangeVector() {
         // find the current position in encoder counts
-        double currentPosition = 0; // todo: actually find the current position of the motor
+        double currentPosition = motor.getCurrentPosition();
         // find the position change since last call and convert to inches
-        double positionChange = (currentPosition - lastPosition) * MWConstants.mecanumWheelInchesPerEncoder;
+        double positionChange = (currentPosition - lastPosition) * MWConstants.inchesPerEncoder;
         // save the current position for later
         lastPosition = currentPosition;
         // find the robot centric position change of the wheel

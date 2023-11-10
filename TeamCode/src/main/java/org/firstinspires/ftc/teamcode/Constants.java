@@ -1,12 +1,12 @@
-package frc.robot;
+package org.firstinspires.ftc.teamcode;
 
 public final class Constants {
     /**
      * drivetrain constants
      */
     public static final class DTConstants {
-        // amount to change the robot velocity per teleop cycle
-        public static final double slewRate = 0.035;
+        /** milliseconds to max speed */
+        public static final double timeToMax = 800.0;
         // max drive rate for autonomous
         public static final double autoMaxDriveRate = 0.2;
         // max rotation rate for autonomous
@@ -26,7 +26,8 @@ public final class Constants {
      * mecanum wheel constants
      */
     public static final class MWConstants {
+        public static final double wheelDiameterInches = 100.0 / 25.4;
         // inches per drive motor encoder (change as needed)
-        public static final double mecanumWheelInchesPerEncoder = 0.1;
+        public static final double inchesPerEncoder = wheelDiameterInches * Math.PI / 537.7;
     }
 }

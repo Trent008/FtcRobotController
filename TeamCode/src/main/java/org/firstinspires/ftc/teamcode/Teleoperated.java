@@ -1,15 +1,31 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
-public class Teleoperated extends OpMode {
+import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
+
+@TeleOp(name="name") // todo: change name
+public class Teleoperated extends LinearOpMode {
+
+    HardwareMap hwMap;
+
+    DriveTrain driveTrain = new DriveTrain();
+
     @Override
-    public void init() {
+    public void runOpMode() throws InterruptedException {
 
-    }
+        driveTrain.initialize(hwMap);
 
-    @Override
-    public void loop() {
+        // Wait for the game to start (driver presses PLAY)
+        waitForStart();
+
+        // run until the end of the match (driver presses STOP)
+        while (opModeIsActive()) {
+            driveTrain.set(new Vector(0, 0), 0, true);
+        }
 
     }
 }
