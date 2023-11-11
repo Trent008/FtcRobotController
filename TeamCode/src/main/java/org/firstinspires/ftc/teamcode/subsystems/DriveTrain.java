@@ -132,6 +132,16 @@ public final class DriveTrain {
 		return (Utils.abs(positionError) < positionTolerance) && (Math.abs(angleError) < angleTolerance);
 	}
 
+	/** use if you only want the robot to turn */
+	public boolean turnToAngle(final double targetAngle, final double angleTolerance) {
+		double angleError = Utils.angleDifference(currentFieldAngle, targetAngle);
+		double anglePIDOutput = angleError * DTConstants.autoAngleP;
+		if (Math.abs(anglePIDOutput) > DTConstants.autoMaxTurnRate) {
+			anglePIDOutput *= DTConstants.autoMaxTurnRate / Math.abs(anglePIDOutput);
+		}
+		return Math.abs(angleError) < angleTolerance;
+	}
+
 	/**
 	 * increment current field and turn rates toward the target rates
 	 */
