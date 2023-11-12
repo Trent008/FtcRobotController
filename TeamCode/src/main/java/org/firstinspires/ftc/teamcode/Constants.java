@@ -8,9 +8,9 @@ public final class Constants {
         /** milliseconds to max speed */
         public static final double timeToMax = 800.0;
         // max drive rate for autonomous
-        public static final double autoMaxDriveRate = 0.2;
+        public static final double autoMaxDriveRate = 0.5;
         // max rotation rate for autonomous
-        public static final double autoMaxTurnRate = 0.2;
+        public static final double autoMaxTurnRate = 0.5;
         // proportional constant for autonomous position error
         public static final double autoPositionP = 0.01;
         // proportional constant for autonomous angle error

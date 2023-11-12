@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
 
-@TeleOp(name="name") // todo: change name
+@TeleOp(name="field-oriented mecanum drive")
 public class Teleoperated extends LinearOpMode {
 
     HardwareMap hwMap;
