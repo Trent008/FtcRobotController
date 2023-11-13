@@ -173,18 +173,13 @@ public final class DriveTrain {
 		// robot-orient the target field rate
 		this.targetFieldRate.rotateCW(-currentFieldAngle);
 		// find the fastest wheel speed
-		double fastestSpeed = 1;
-		for (MecanumWheel wheel : wheels) {
-			double wheelSpeed = Math.abs(wheel.getVelocity(targetFieldRate, targetTurnRate));
-			if (wheelSpeed > fastestSpeed) {
-				fastestSpeed = wheelSpeed;
-			}
+		double fastestWheelSpeed = Math.abs(targetFieldRate.x) + Math.abs(targetFieldRate.y) + Math.abs(targetTurnRate);
+		// divide by maxWheelSpeed if it is greater than 1
+		if (fastestWheelSpeed > 1) {
+			targetFieldRate.divide(fastestWheelSpeed);
+			targetTurnRate /= fastestWheelSpeed;
 		}
-		// limit the target rates so that the wheel speeds won't ecxeed 1
-		targetFieldRate.divide(fastestSpeed);
-		targetTurnRate /= fastestSpeed;
 		// make the target field rate field-centric again
 		targetFieldRate.rotateCW(currentFieldAngle);
 	}
-
 }
